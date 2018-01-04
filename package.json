@@ -1,0 +1,11 @@
+{
+  "name": "teaching-diary-api",
+  "version": "1.0.0",
+  "description": "API that allows users to sign in and track their time entries",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
