@@ -35,7 +35,8 @@ passport.use(
                     email: profile.emails[0].value
                 }
             })
-            .spread((user, created) => done(null, user));
+            .spread((user, created) => done(null, user)
+);
         }
     )
 );
@@ -48,6 +49,7 @@ app
 
 // TODO: remove this
 app.get('/', (req, res) => {
+    //console.log(req.user);
     return res.render('index');
 });
 
