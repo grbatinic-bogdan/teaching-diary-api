@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const { sequelize } = require('../db/mysql');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const User = sequelize.define(
     'user',
@@ -10,16 +11,13 @@ const User = sequelize.define(
             primaryKey: true,
             autoIncrement: true
         },
-        googleId: {
-            type: Sequelize.STRING,
-            unique: true
-        },
         email: {
             type: Sequelize.STRING,
             unique: true
         },
         firstName: Sequelize.STRING,
         lastName: Sequelize.STRING,
+        password: Sequelize.STRING
     },
     {
         underscored: true,
@@ -38,6 +36,44 @@ User.prototype.generateToken = function() {
         }
     ).toString();
 };
+
+User.prototype.toJSON = function() {
+    return {
+        email,
+        firstName,
+        lastName
+    } = this;
+};
+
+User.findByCredentials = function(email, password) {
+    User.findOne({
+        where: {
+            email
+        }
+    })
+        .then((user) => {
+            if (user) {
+                return user;
+            }
+
+            return Promise.reject('User not found. Email does not exist');
+        })
+        .then((user) => {
+            return new Promise((resolve, reject) => {
+                bcrypt.compare(password, user.password, (err, res) => {
+                    (res) ? resolve(user) : reject('Wrong password');
+                })
+            });
+        });
+}
+
+User.beforeCreate((user, options) => {
+    bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(user.password, salt, function(err, hash) {
+            user.password = hash;
+        });
+    });
+});
 
 User.sync()
     .then(() => {
