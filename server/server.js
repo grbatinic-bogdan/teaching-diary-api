@@ -20,9 +20,10 @@ app.post('/login', (req, res) => {
         })
         .then((token) => {
             res.header('x-auth', token)
-                .send(token);
+                .send({});
         })
         .catch((err) => {
+            console.log(err);
             res.status(400).send();
         });
 });
@@ -46,7 +47,7 @@ app.post('/users', (req, res) => {
         .then((savedUser) => {
             res.send(savedUser.toJSON());
         })
-        .catch(() => {
+        .catch((error) => {
             res.status(400)
                 .send();
         })

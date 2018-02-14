@@ -39,14 +39,14 @@ User.prototype.generateToken = function() {
 
 User.prototype.toJSON = function() {
     return {
-        email,
-        firstName,
-        lastName
-    } = this;
+        email: this.email,
+        firstName: this.firstName,
+        lastName: this.lastName
+    };
 };
 
 User.findByCredentials = function(email, password) {
-    User.findOne({
+    return User.findOne({
         where: {
             email
         }
@@ -67,10 +67,13 @@ User.findByCredentials = function(email, password) {
         });
 }
 
-User.beforeCreate((user, options) => {
-    bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(user.password, salt, function(err, hash) {
-            user.password = hash;
+User.beforeSave((user, options) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, function(err, hash) {
+                user.password = hash;
+                resolve(hash);
+            });
         });
     });
 });
