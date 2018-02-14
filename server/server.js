@@ -51,17 +51,6 @@ app.post('/users', (req, res) => {
             res.status(400)
                 .send();
         })
-})
-
-// TODO: remove this
-app
-    .set('views', path.join(`${__dirname}/../`, 'views'))
-    .set('view engine', 'ejs');
-
-// TODO: remove this
-app.get('/', (req, res) => {
-    //console.log(req.user);
-    return res.render('index');
 });
 
 app.listen(3000, () => {
