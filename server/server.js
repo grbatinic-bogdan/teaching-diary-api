@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 // db
 const { sequalize } = require('./db/mysql');
 const { User } = require('./models/user');
+const { authenticate } = require('./middleware')
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -52,6 +53,10 @@ app.post('/users', (req, res) => {
                 .send();
         })
 });
+
+app.get('/me', authenticate, (req, res) => {
+    res.send({});
+})
 
 app.listen(3000, () => {
     console.log('server up');

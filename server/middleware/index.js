@@ -1,4 +1,4 @@
-const { User } = require('./../models/user');
+const { User } = require('../models/user');
 const jwt = require('jsonwebtoken');
 
 const authenticate = (req, res, next) => {
@@ -11,7 +11,7 @@ const authenticate = (req, res, next) => {
         return Promise.reject('Unathorized');
     }
 
-    User.findById(decoded.id)
+    return User.findById(decoded.id)
         .then((user) => {
             if (!user) {
                 return Promise.reject('User not found');

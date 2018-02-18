@@ -67,6 +67,33 @@ User.findByCredentials = function(email, password) {
         });
 }
 
+User.findByToken = (token) => {
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.jwtSecret);
+    } catch(error) {
+        return Promise.reject('Unauthorized');
+    }
+
+    return User.findOne({
+        where: {
+            id: decoded.id,
+            email: decoded.email
+        }
+    })
+    .then((user) => {
+        if (user) {
+            return user;
+        }
+
+        return Promise.reject('User not found');
+    })
+    .catch(() => {
+        return Promise.reject('Unauthorized');
+    })
+
+};
+
 User.beforeSave((user, options) => {
     return new Promise((resolve, reject) => {
         bcrypt.genSalt(10, (err, salt) => {
