@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const { sequelize } = require('../db/mysql');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const TimeEntry = require('./time-entry');
 
 const User = sequelize.define(
     'user',
@@ -24,6 +25,8 @@ const User = sequelize.define(
     }
 );
 
+User.hasMany(TimeEntry);
+
 User.prototype.generateToken = function() {
     return jwt.sign(
         {
@@ -37,7 +40,7 @@ User.prototype.generateToken = function() {
     ).toString();
 };
 
-User.prototype.toJSON = function() {
+User.prototype.toJSON = () => {
     return {
         email: this.email,
         firstName: this.firstName,
@@ -45,7 +48,7 @@ User.prototype.toJSON = function() {
     };
 };
 
-User.findByCredentials = function(email, password) {
+User.findByCredentials = (email, password) => {
     return User.findOne({
         where: {
             email
@@ -104,11 +107,6 @@ User.beforeSave((user, options) => {
         });
     });
 });
-
-User.sync()
-    .then(() => {
-        console.log('User table created');
-    })
 
 module.exports = {
     User

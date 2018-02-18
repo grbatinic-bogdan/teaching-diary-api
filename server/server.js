@@ -9,7 +9,8 @@ app.use(bodyParser.json());
 
 // db
 const { sequalize } = require('./db/mysql');
-const { User } = require('./models/user');
+//const { User } = require('./models/user');
+const { TimeEntry, User, Location } = require('./models');
 const { authenticate } = require('./middleware')
 
 app.post('/login', (req, res) => {
