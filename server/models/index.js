@@ -11,7 +11,7 @@ const modelOrder = [
 modelOrder.forEach(model => {
     model.sync()
         .then(() => {
-            console.log(`Model table has been created`);
+            //console.log(`Model table has been created`);
         })
         .catch(error => {
             console.log(error);

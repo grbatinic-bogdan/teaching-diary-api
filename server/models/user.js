@@ -16,16 +16,22 @@ const User = sequelize.define(
             type: Sequelize.STRING,
             unique: true
         },
-        firstName: Sequelize.STRING,
-        lastName: Sequelize.STRING,
-        password: Sequelize.STRING
+        firstName: {
+            type: Sequelize.STRING,
+        },
+        lastName: {
+            type: Sequelize.STRING
+        },
+        password:{
+            type: Sequelize.STRING
+        }
     },
     {
         underscored: true,
     }
 );
 
-User.hasMany(TimeEntry);
+//User.hasMany(TimeEntry);
 
 User.prototype.generateToken = function() {
     return jwt.sign(

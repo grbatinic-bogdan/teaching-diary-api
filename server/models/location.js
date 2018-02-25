@@ -25,7 +25,7 @@ const Location = sequelize.define(
     }
 );
 
-Location.hasMany(TimeEntry);
+//Location.hasMany(TimeEntry);
 
 module.exports = {
     Location

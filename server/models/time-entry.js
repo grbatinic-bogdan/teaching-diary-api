@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const { sequelize } = require('../db/mysql');
+const { User } = require('./user');
+const { Location } = require('./location');
 
 const TimeEntry = sequelize.define(
     'time_entry',
@@ -32,6 +34,17 @@ const TimeEntry = sequelize.define(
         underscored: true,
     }
 );
+
+TimeEntry.belongsTo(User, {
+    as: 'user',
+    foreignKey: 'user_id',
+    targetKey: 'id'
+});
+TimeEntry.belongsTo(Location, {
+    as: 'location',
+    foreignKey: 'location_id',
+    targetKey: 'id'
+});
 
 module.exports = TimeEntry;
 
