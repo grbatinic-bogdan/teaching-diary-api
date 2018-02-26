@@ -89,6 +89,9 @@ app.get('/locations', authenticate, (req, res) => {
         })
 });
 
+/**
+ * TODO: refactor so create method includes both models
+ */
 app.post('/time-entry', authenticate, (req, res) => {
     const {
         name,
@@ -103,27 +106,31 @@ app.post('/time-entry', authenticate, (req, res) => {
     const locationPromise = Location.findById(locationId);
     const userPromise = User.findById(req.user.id);
 
-    Promise.all([locationPromise, userPromise])
+    const time = moment.utc(timeInput).format('YYYY-MM-DD HH:mm:ss');
+    const timeEntryPromise = TimeEntry.create(
+        {
+            name,
+            time,
+            duration,
+            individual,
+            status,
+        }
+    );
+
+    Promise.all([locationPromise, userPromise, timeEntryPromise])
         .then((promises) => {
-            const [user, location] = promises;
+            const [user, location, timeEntry] = promises;
 
-            const time = moment.utc(timeInput).format('YYYY-MM-DD HH:mm:ss');
-            const timeEntry = TimeEntry.build({
-                name,
-                time,
-                duration,
-                individual,
-                status,
-            });
+            const addUserPromise = timeEntry.setUser(user.id);
+            const addLocationPromise = timeEntry.setLocation(location.id);
 
-            const addUserPromise = timeEntry.addUser(user);
-            const addLocationPromise = timeEntry.addLocation(location);
-
-
-            return timeEntry;
-        })
-        .then((timeEntry) => {
-            return timeEntry.save()
+            return Promise.all([addUserPromise, addLocationPromise])
+                .then(() => {
+                    return timeEntry;
+                })
+                .catch((error) => {
+                    return Promise.reject(error);
+                })
         })
         .then((savedTimeEntry) => {
             res.send(savedTimeEntry.toJSON());
