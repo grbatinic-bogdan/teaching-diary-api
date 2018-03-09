@@ -119,7 +119,7 @@ app.post('/time-entry', authenticate, (req, res) => {
 
     Promise.all([locationPromise, userPromise, timeEntryPromise])
         .then((promises) => {
-            const [user, location, timeEntry] = promises;
+            const [location, user, timeEntry] = promises;
 
             const addUserPromise = timeEntry.setUser(user.id);
             const addLocationPromise = timeEntry.setLocation(location.id);
@@ -143,8 +143,9 @@ app.post('/time-entry', authenticate, (req, res) => {
 });
 
 app.get('/me', authenticate, (req, res) => {
-    res.send({});
-})
+    const user = req.user.toJSON();
+    res.send(user);
+});
 
 app.listen(3000, () => {
     console.log('server up');

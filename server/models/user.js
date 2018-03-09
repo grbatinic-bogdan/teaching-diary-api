@@ -22,7 +22,7 @@ const User = sequelize.define(
         lastName: {
             type: Sequelize.STRING
         },
-        password:{
+        password: {
             type: Sequelize.STRING
         }
     },
