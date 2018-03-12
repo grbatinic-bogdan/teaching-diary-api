@@ -46,7 +46,7 @@ User.prototype.generateToken = function() {
     ).toString();
 };
 
-User.prototype.toJSON = () => {
+User.prototype.toJSON = function() {
     return {
         email: this.email,
         firstName: this.firstName,

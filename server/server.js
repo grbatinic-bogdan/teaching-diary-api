@@ -6,23 +6,29 @@ const moment = require('moment');
 
 const app = express();
 
-app.use(bodyParser.json());
+
 
 // db
 const { sequalize } = require('./db/mysql');
 const { TimeEntry, User, Location } = require('./models');
-const { authenticate } = require('./middleware');
+const { authenticate, cors } = require('./middleware');
+
+app.use(bodyParser.json());
+app.use(cors);
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
     User.findByCredentials(email, password)
         .then((user) => {
-            return user.generateToken();
+            return Promise.all([
+                user.generateToken(),
+                Promise.resolve(user)
+            ]);
         })
-        .then((token) => {
+        .then(([token, user]) => {
             res.header('x-auth', token)
-                .send({});
+                .send(user.toJSON());
         })
         .catch((err) => {
             console.log(err);
@@ -147,6 +153,6 @@ app.get('/me', authenticate, (req, res) => {
     res.send(user);
 });
 
-app.listen(3000, () => {
+app.listen(8000, () => {
     console.log('server up');
 });
