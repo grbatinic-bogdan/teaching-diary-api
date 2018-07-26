@@ -104,12 +104,59 @@ app.post('/time-entry', authenticate, (req, res) => {
         description,
         time: timeInput,
         duration,
-        location: locationId,
+        // location: locationId,
+        location: locationData,
         individual,
         status,
     } = req.body;
 
-    const locationPromise = Location.findById(locationId);
+
+    const locationPromise = new Promise((resolve, reject) => {
+        if (locationData) {
+            const locationTransaction = Location.findOrCreate({
+                where: {
+                    address: locationData.address
+                },
+                defaults: {
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude
+                }
+            });
+
+            resolve(locationTransaction);
+        }
+
+        reject('Location data missing');
+    })
+
+    .then(([locationModel, created]) => {
+        return locationModel.toJSON();
+    })
+    .catch((error) => {
+        // no location given, resolve
+        return Promise.resolve(false);
+    })
+
+
+    /*
+    if (locationData !== '') {
+        if (locationData.address !== '') {
+            locationPromise = Location.findOrCreate({
+                where: {
+                    address: locationData.address
+                }
+            });
+        } else {
+            locationPromise = Promise.resolve(locationData)
+        }
+
+    } else {
+        locationPromise = Promise.resolve(locationData);
+    }
+    */
+
+
+    // const locationPromise = Location.findById(locationId);
     const userPromise = User.findById(req.user.id);
 
     const time = moment.utc(timeInput).format('YYYY-MM-DD HH:mm:ss');
@@ -126,9 +173,8 @@ app.post('/time-entry', authenticate, (req, res) => {
     Promise.all([locationPromise, userPromise, timeEntryPromise])
         .then((promises) => {
             const [location, user, timeEntry] = promises;
-
             const addUserPromise = timeEntry.setUser(user.id);
-            const addLocationPromise = timeEntry.setLocation(location.id);
+            const addLocationPromise = (location) ? timeEntry.setLocation(location.id) : Promise.resolve();
 
             return Promise.all([addUserPromise, addLocationPromise])
                 .then(() => {
@@ -146,6 +192,25 @@ app.post('/time-entry', authenticate, (req, res) => {
                 .send({});
         });
 
+});
+
+app.get('/time-entry', authenticate, (req, res) => {
+    TimeEntry.findAll({
+        where: {
+            user_id: req.user.id
+        },
+        include: [{
+            model: Location,
+            as: 'location'
+        }]
+    })
+        .then((timeEntries) => {
+            res.send(timeEntries);
+        })
+        .catch((error) => {
+            res.status(400)
+                .send();
+        });
 });
 
 app.get('/me', authenticate, (req, res) => {
