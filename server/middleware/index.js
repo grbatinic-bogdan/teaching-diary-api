@@ -8,7 +8,7 @@ const authenticate = (req, res, next) => {
     try {
         decoded = jwt.verify(token, process.env.jwtSecret);
     } catch(err) {
-        return Promise.reject('Unathorized');
+        res.status(401).send();
     }
 
     return User.findById(decoded.id)
