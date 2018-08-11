@@ -128,7 +128,6 @@ app.post('/time-entry', authenticate, (req, res) => {
 
         reject('Location data missing');
     })
-
     .then(([locationModel, created]) => {
         return locationModel.toJSON();
     })
@@ -211,6 +210,104 @@ app.get('/time-entry', authenticate, (req, res) => {
             res.status(400)
                 .send();
         });
+});
+
+app.get('/time-entry/:id', authenticate, (req, res) => {
+    TimeEntry.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: [{
+            model: Location,
+            as: 'location'
+        }]
+    })
+    .then((timeEntry) => {
+        res.send(timeEntry.toJSON());
+    })
+    .catch(() => {
+        res.status(401).send();
+    })
+});
+
+app.put('/time-entry/:id', authenticate, (req, res) => {
+    TimeEntry.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: [{
+            model: Location,
+            as: 'location'
+        }]
+    })
+    .then((foundTimeEntry) => {
+        if (foundTimeEntry) {
+            return Promise.resolve(foundTimeEntry);
+        }
+
+        return res.status(401).send();
+    })
+    .then((foundTimeEntry) => {
+        const {
+            location: locationData
+        } = req.body;
+
+        const location = new Promise((resolve, reject) => {
+            if (locationData) {
+                const locationTransaction = Location.findOrCreate({
+                    where: {
+                        address: locationData.address
+                    },
+                    defaults: {
+                        latitude: locationData.latitude,
+                        longitude: locationData.longitude
+                    }
+                });
+                resolve(locationTransaction);
+            }
+
+            reject('No location provided');
+        })
+        .then(([locationModel, created]) => locationModel.toJSON())
+        .catch((error) => null);
+
+        return Promise.all([foundTimeEntry, location]);
+    })
+    .then(([foundTimeEntry, location]) => {
+        const {
+            name,
+            description,
+            time: timeInput,
+            duration,
+            individual,
+            status,
+        } = req.body;
+        const timeObject = moment(timeInput);
+        if (!timeObject.isValid()) {
+            throw new Error('Invalid time selected');
+        }
+        const time = timeObject.format('YYYY-MM-DD HH:mm:ss');
+        if (location) {
+            foundTimeEntry.setLocation(location.id);
+        } else {
+            foundTimeEntry.setLocation(null);
+        }
+        return foundTimeEntry.update(
+            {
+                name,
+                description,
+                time,
+                individual,
+                duration,
+                status
+            }
+        );
+    })
+    .then((timeEntry) => timeEntry.reload())
+    .then((reloadedTimeEntry) => res.send(reloadedTimeEntry.toJSON()))
+    .catch((error) => {
+        res.status(400).send();
+    })
 });
 
 app.get('/me', authenticate, (req, res) => {
