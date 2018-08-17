@@ -310,6 +310,23 @@ app.put('/time-entry/:id', authenticate, (req, res) => {
     })
 });
 
+app.delete('/time-entry/:id', authenticate, (req, res) => {
+    TimeEntry.findOne({
+        where: {
+            id: req.params.id
+        }
+    })
+    .then((timeEntry) => {
+        return timeEntry.destroy();
+    })
+    .then(() => {
+        res.send({});
+    })
+    .catch((error) => {
+        res.status(400).send();
+    })
+});
+
 app.get('/me', authenticate, (req, res) => {
     const user = req.user.toJSON();
     res.send(user);
